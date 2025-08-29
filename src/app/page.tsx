@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button'
+import { TransactionDrawer } from '@/components/transaction-drawer'
 import { Card } from '@/components/ui/card'
 import {
   Table,
@@ -108,10 +108,8 @@ export default async function Home() {
 
         {/* quick actions */}
         <div className="mb-4 flex gap-2">
-          <Button className="flex-1">収入を追加</Button>
-          <Button variant="outline" className="flex-1">
-            支出を追加
-          </Button>
+          <TransactionDrawer variant="income" />
+          <TransactionDrawer variant="expense" />
         </div>
 
         {/* transactions list */}
