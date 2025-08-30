@@ -3,7 +3,6 @@
 import { TransactionDrawer } from '@/components/transaction-drawer'
 import TransactionsList from '@/components/transactions-list'
 import { Card } from '@/components/ui/card'
-// table rendering moved to client component TransactionsList
 import { Tables } from '@/utils/supabase/database.types'
 import { createClient } from '@/utils/supabase/server'
 
