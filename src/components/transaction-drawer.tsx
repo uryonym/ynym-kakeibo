@@ -2,7 +2,7 @@
 
 import { CalendarIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { Button } from '@/components/ui/button'
@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
+import { createClient } from '@/utils/supabase/client'
 
 type Props = {
   variant: 'income' | 'expense'
@@ -54,6 +55,42 @@ export function TransactionDrawer({ variant }: Props) {
   })
 
   const [isSaving, setIsSaving] = useState(false)
+
+  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([])
+  const [loadingCategories, setLoadingCategories] = useState(false)
+
+  useEffect(() => {
+    let mounted = true
+    async function load() {
+      setLoadingCategories(true)
+      try {
+        const supabase = createClient()
+        const { data, error } = await supabase
+          .from('categories')
+          .select('id, name')
+          .order('seq', { ascending: true })
+
+        if (error) {
+          console.error('Failed to load categories', error)
+          return
+        }
+
+        if (mounted && data) {
+          setCategories(data as Array<{ id: string; name: string }>)
+        }
+      } catch (err) {
+        console.error(err)
+      } finally {
+        if (mounted) setLoadingCategories(false)
+      }
+    }
+
+    load()
+
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   async function onSubmit(values: FormValues) {
     setIsSaving(true)
@@ -158,7 +195,21 @@ export function TransactionDrawer({ variant }: Props) {
                   <FormItem>
                     <FormLabel>カテゴリ</FormLabel>
                     <FormControl>
-                      <Input placeholder="カテゴリを入力" {...form.register('category')} />
+                      {loadingCategories ? (
+                        <Input disabled placeholder="読み込み中..." />
+                      ) : (
+                        <select
+                          className="w-full rounded-md border bg-transparent px-3 py-1 text-base"
+                          {...form.register('category')}
+                        >
+                          <option value="">未選択</option>
+                          {categories.map((c) => (
+                            <option key={c.id} value={c.name}>
+                              {c.name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
                     </FormControl>
                     <FormMessage />
                   </FormItem>
