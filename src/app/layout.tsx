@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+
+import BottomTabs from '@/components/bottom-tabs'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -12,7 +14,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body>{children}</body>
+      {/* コンテンツに下部余白をつけ、ボトムタブが被らないようにする */}
+      <body>
+        <div className="min-h-screen pb-24">{children}</div>
+        <BottomTabs />
+      </body>
     </html>
   )
 }
