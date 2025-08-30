@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Tables } from '@/utils/supabase/database.types'
 import { createClient } from '@/utils/supabase/server'
 
 type Tx = {
@@ -27,50 +28,30 @@ export default async function Home() {
   const supabase = await createClient()
   const { data: categories } = await supabase.from('categories').select()
   const categoriesCount = categories?.length ?? 0
+  // Query transactions for the current month from Supabase
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = now.getMonth() + 1
+  const startOfMonth = `${year}-${String(month).padStart(2, '0')}-01`
+  const nextMonth = new Date(year, month, 1)
+  const nextMonthStart = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}-01`
 
-  // For now, mock transactions for the month. Later wire to DB.
-  const transactions: Tx[] = [
-    {
-      id: '1',
-      date: '2025-08-01',
-      title: '給料',
-      category: '収入',
-      amount: 300000,
-      type: 'income',
-    },
-    {
-      id: '2',
-      date: '2025-08-05',
-      title: '家賃',
-      category: '住居',
-      amount: 80000,
-      type: 'expense',
-    },
-    {
-      id: '3',
-      date: '2025-08-10',
-      title: '食費',
-      category: '食費',
-      amount: 15000,
-      type: 'expense',
-    },
-    {
-      id: '4',
-      date: '2025-08-20',
-      title: '副業収入',
-      category: '収入',
-      amount: 20000,
-      type: 'income',
-    },
-    {
-      id: '5',
-      date: '2025-08-25',
-      title: '公共料金',
-      category: '光熱費',
-      amount: 8000,
-      type: 'expense',
-    },
-  ]
+  const { data: transactionsData } = await supabase
+    .from('transactions')
+    .select('*')
+    .gte('date', startOfMonth)
+    .lt('date', nextMonthStart)
+    .order('date', { ascending: true })
+
+  const transactions: Tx[] = (transactionsData ?? []).map((t: Tables<'transactions'>) => ({
+    id: t.id,
+    date: t.date,
+    title: t.title,
+    category:
+      categories?.find((c: Tables<'categories'>) => c.id === t.category_id)?.name ?? '未分類',
+    amount: t.amount,
+    type: t.type,
+  }))
 
   const incomeTotal = transactions
     .filter((t) => t.type === 'income')
