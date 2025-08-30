@@ -29,9 +29,15 @@ import { createClient } from '@/utils/supabase/client'
 
 type Props = {
   variant: 'income' | 'expense'
+  // when provided, used to prefill form for editing
+  initialValues?: Partial<FormValues> & { id?: string }
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  hideTrigger?: boolean
 }
 
 type FormValues = {
+  id?: string
   date: string
   title: string
   category: string
@@ -39,9 +45,20 @@ type FormValues = {
   note?: string
 }
 
-export function TransactionDrawer({ variant }: Props) {
+export function TransactionDrawer({
+  variant,
+  initialValues,
+  open: openProp,
+  onOpenChange,
+  hideTrigger,
+}: Props) {
   const isIncome = variant === 'income'
-  const [open, setOpen] = useState(false)
+  const [openState, setOpenState] = useState(false)
+  const open = typeof openProp === 'boolean' ? openProp : openState
+  const setOpen = (v: boolean) => {
+    if (onOpenChange) onOpenChange(v)
+    if (typeof openProp !== 'boolean') setOpenState(v)
+  }
   const router = useRouter()
 
   const form = useForm<FormValues>({
@@ -53,6 +70,22 @@ export function TransactionDrawer({ variant }: Props) {
       note: '',
     },
   })
+
+  // sync initialValues when opening for edit
+  useEffect(() => {
+    if (open && initialValues) {
+      form.reset({
+        id: initialValues.id,
+        date: initialValues.date ?? new Date().toISOString().slice(0, 10),
+        title: initialValues.title ?? '',
+        category: initialValues.category ?? '',
+        amount: initialValues.amount ?? 0,
+        note: initialValues.note ?? '',
+      })
+    }
+    // hideTrigger is intentionally read here to avoid unused lint when prop passed
+    void hideTrigger
+  }, [open, initialValues, form, hideTrigger])
 
   const [isSaving, setIsSaving] = useState(false)
 
@@ -96,11 +129,23 @@ export function TransactionDrawer({ variant }: Props) {
     setIsSaving(true)
     try {
       const payload = { ...values, type: isIncome ? 'income' : 'expense' }
-      const res = await fetch('/api/transactions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
+
+      let res: Response
+      if (values.id) {
+        // update
+        res = await fetch('/api/transactions', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      } else {
+        // create
+        res = await fetch('/api/transactions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      }
 
       if (!res.ok) {
         const err = await res.json()
@@ -122,11 +167,13 @@ export function TransactionDrawer({ variant }: Props) {
 
   return (
     <Drawer direction="bottom" open={open} onOpenChange={setOpen}>
-      <DrawerTrigger asChild>
-        <Button variant={isIncome ? 'default' : 'outline'} className="flex-1">
-          {isIncome ? '収入を追加' : '支出を追加'}
-        </Button>
-      </DrawerTrigger>
+      {!hideTrigger && (
+        <DrawerTrigger asChild>
+          <Button variant={isIncome ? 'default' : 'outline'} className="flex-1">
+            {isIncome ? '収入を追加' : '支出を追加'}
+          </Button>
+        </DrawerTrigger>
+      )}
 
       <DrawerContent className="max-w-xl">
         <DrawerHeader>
