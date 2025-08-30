@@ -2,7 +2,7 @@
 
 import { CalendarIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import * as React from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { Button } from '@/components/ui/button'
@@ -40,8 +40,8 @@ type FormValues = {
 
 export function TransactionDrawer({ variant }: Props) {
   const isIncome = variant === 'income'
-  const [open, setOpen] = React.useState(false)
-    const router = useRouter()
+  const [open, setOpen] = useState(false)
+  const router = useRouter()
 
   const form = useForm<FormValues>({
     defaultValues: {
@@ -53,7 +53,7 @@ export function TransactionDrawer({ variant }: Props) {
     },
   })
 
-  const [isSaving, setIsSaving] = React.useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
   async function onSubmit(values: FormValues) {
     setIsSaving(true)
@@ -71,9 +71,9 @@ export function TransactionDrawer({ variant }: Props) {
       }
 
       // success
-  form.reset()
-  setOpen(false)
-  router.refresh()
+      form.reset()
+      setOpen(false)
+      router.refresh()
     } catch (err: unknown) {
       console.error(err)
       const message = err instanceof Error ? err.message : String(err)
