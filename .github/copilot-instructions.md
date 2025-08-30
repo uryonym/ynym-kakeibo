@@ -7,6 +7,7 @@
 ## システム構成
 
 アプリケーションは、Next.js 15 の App Router を使用して構築されています。コードは TypeScript で書かれています。UI コンポーネントには Tailwind CSS と shadcn/ui が使用されています。データベースには Supabase が使用されています。
+パッケージマネージャは npm を使用しています。
 
 ## レビュー
 
