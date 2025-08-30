@@ -1,9 +1,12 @@
 'use client'
 
+import { CalendarIcon } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import * as React from 'react'
 import { useForm } from 'react-hook-form'
 
 import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
 import {
   Drawer,
   DrawerTrigger,
@@ -21,6 +24,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 
 type Props = {
   variant: 'income' | 'expense'
@@ -36,6 +40,9 @@ type FormValues = {
 
 export function TransactionDrawer({ variant }: Props) {
   const isIncome = variant === 'income'
+  const [open, setOpen] = React.useState(false)
+    const router = useRouter()
+
   const form = useForm<FormValues>({
     defaultValues: {
       date: new Date().toISOString().slice(0, 10),
@@ -46,13 +53,38 @@ export function TransactionDrawer({ variant }: Props) {
     },
   })
 
-  function onSubmit(values: FormValues) {
-    // UI only: 保存処理はまだ実装しない
-    console.log('submit', values)
+  const [isSaving, setIsSaving] = React.useState(false)
+
+  async function onSubmit(values: FormValues) {
+    setIsSaving(true)
+    try {
+      const payload = { ...values, type: isIncome ? 'income' : 'expense' }
+      const res = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err?.error || '保存に失敗しました')
+      }
+
+      // success
+  form.reset()
+  setOpen(false)
+  router.refresh()
+    } catch (err: unknown) {
+      console.error(err)
+      const message = err instanceof Error ? err.message : String(err)
+      alert(message || '保存中にエラーが発生しました')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
-    <Drawer direction="bottom">
+    <Drawer direction="bottom" open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
         <Button variant={isIncome ? 'default' : 'outline'} className="flex-1">
           {isIncome ? '収入を追加' : '支出を追加'}
@@ -73,15 +105,33 @@ export function TransactionDrawer({ variant }: Props) {
               <FormField
                 name="date"
                 control={form.control}
-                render={() => (
-                  <FormItem>
-                    <FormLabel>日付</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...form.register('date')} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={() => {
+                  return (
+                    <FormItem>
+                      <FormLabel>日付</FormLabel>
+                      <FormControl>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-between">
+                              {form.getValues('date')}
+                              <CalendarIcon />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0">
+                            <Calendar
+                              mode="single"
+                              selected={new Date(form.getValues('date'))}
+                              onSelect={(date) => {
+                                if (date) form.setValue('date', date.toISOString().slice(0, 10))
+                              }}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )
+                }}
               />
 
               <FormField
@@ -148,11 +198,19 @@ export function TransactionDrawer({ variant }: Props) {
               />
 
               <div className="flex w-full gap-2">
-                <Button className="flex-1" type="button" onClick={() => form.reset()}>
+                <Button
+                  className="flex-1"
+                  type="button"
+                  onClick={() => {
+                    form.reset()
+                    setOpen(false)
+                  }}
+                  disabled={isSaving}
+                >
                   キャンセル
                 </Button>
-                <Button className="flex-1" type="submit">
-                  保存
+                <Button className="flex-1" type="submit" disabled={isSaving}>
+                  {isSaving ? '保存中...' : '保存'}
                 </Button>
               </div>
             </form>
