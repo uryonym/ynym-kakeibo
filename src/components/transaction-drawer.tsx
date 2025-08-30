@@ -1,3 +1,5 @@
+// トランザクション（収入/支出）の追加・編集用の Drawer コンポーネント（クライアントサイド）
+// 新規作成と編集の両方に対応し、カテゴリは Supabase から取得してプルダウン表示します。
 'use client'
 
 import { CalendarIcon } from 'lucide-react'
@@ -29,7 +31,7 @@ import { createClient } from '@/utils/supabase/client'
 
 type Props = {
   variant: 'income' | 'expense'
-  // when provided, used to prefill form for editing
+  // initialValues が与えられた場合は編集用の初期値としてフォームに流し込みます
   initialValues?: Partial<FormValues> & { id?: string }
   open?: boolean
   onOpenChange?: (open: boolean) => void
@@ -71,7 +73,7 @@ export function TransactionDrawer({
     },
   })
 
-  // sync initialValues when opening for edit
+  // 編集モードで Drawer が開いたときに初期値をフォームへセットします
   useEffect(() => {
     if (open && initialValues) {
       form.reset({
@@ -83,7 +85,7 @@ export function TransactionDrawer({
         note: initialValues.note ?? '',
       })
     }
-    // hideTrigger is intentionally read here to avoid unused lint when prop passed
+    // hideTrigger を参照することで未使用警告を回避しています（意図的）
     void hideTrigger
   }, [open, initialValues, form, hideTrigger])
 
@@ -132,14 +134,14 @@ export function TransactionDrawer({
 
       let res: Response
       if (values.id) {
-        // update
+        // 既存の取引を更新する場合は PATCH を呼び出す
         res = await fetch('/api/transactions', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         })
       } else {
-        // create
+        // 新規作成の場合は POST を呼び出す
         res = await fetch('/api/transactions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -152,7 +154,7 @@ export function TransactionDrawer({
         throw new Error(err?.error || '保存に失敗しました')
       }
 
-      // success
+      // 保存成功時の処理
       form.reset()
       setOpen(false)
       router.refresh()

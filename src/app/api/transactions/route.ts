@@ -1,3 +1,5 @@
+// 取引の作成・更新用 API エンドポイント
+// POST: 新規作成、PATCH: 指定 id の取引を更新
 import { NextResponse } from 'next/server'
 
 import { Tables } from '@/utils/supabase/database.types'
@@ -14,7 +16,7 @@ export async function POST(req: Request) {
 
     const supabase = await createClient()
 
-    // resolve category name -> id, create if not exists
+    // カテゴリ名からカテゴリ id を解決。存在しなければ新規作成する
     let categoryId: string | null = null
     if (category) {
       const { data: existing } = await supabase
@@ -28,7 +30,7 @@ export async function POST(req: Request) {
         categoryId = e.id
       } else {
         const newId = crypto.randomUUID()
-        // insert with seq 0 by default
+        // デフォルトで seq を 0 にしてカテゴリを作成
         await supabase.from('categories').insert({ id: newId, name: category, seq: 0 })
         categoryId = newId
       }
@@ -71,7 +73,7 @@ export async function PATCH(req: Request) {
 
     const supabase = await createClient()
 
-    // resolve category name -> id, create if not exists
+    // カテゴリ名からカテゴリ id を解決。存在しなければ新規作成する（更新時）
     let categoryId: string | null = null
     if (category) {
       const { data: existing } = await supabase

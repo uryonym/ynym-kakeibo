@@ -1,3 +1,5 @@
+// 明細一覧を表示するクライアントコンポーネント
+// テーブル行をクリックすると該当取引を編集する Drawer を開きます
 'use client'
 
 import { useState } from 'react'

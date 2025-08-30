@@ -1,3 +1,5 @@
+// このファイルはアプリのトップページ（サーバーコンポーネント）です。
+// サーバー側でカテゴリと当月の取引を取得し、クライアントコンポーネントへ渡します。
 import { TransactionDrawer } from '@/components/transaction-drawer'
 import TransactionsList from '@/components/transactions-list'
 import { Card } from '@/components/ui/card'
@@ -14,7 +16,7 @@ type Tx = {
   type: 'income' | 'expense'
 }
 
-// small helper to format currency
+// 通貨表示を日本円表記に整形する小さなヘルパー
 const formatYen = (n: number) =>
   n.toLocaleString('ja-JP', { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 })
 
@@ -22,7 +24,7 @@ export default async function Home() {
   const supabase = await createClient()
   const { data: categories } = await supabase.from('categories').select()
   const categoriesCount = categories?.length ?? 0
-  // Query transactions for the current month from Supabase
+  // Supabase から当月の取引を取得する（サーバーサイドで実行）
   const now = new Date()
   const year = now.getFullYear()
   const month = now.getMonth() + 1
