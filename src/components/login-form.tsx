@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState } from 'react'
 
 import * as actions from '@/app/login/actions'
 import { Button } from '@/components/ui/button'
@@ -13,7 +13,15 @@ import { Spinner } from '@/components/ui/spinner'
 export default function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [isPending] = useTransition()
+  const [loading, setLoading] = useState(false)
+
+  // サーバーアクションはフォーム submit として動くが、fetch 中にローカルで loading を制御するため
+  // onSubmit ハンドラで loading をセットしてからフォームを送信する
+  const onSubmit: React.FormEventHandler<HTMLFormElement> = () => {
+    setLoading(true)
+    // フォームは通常通り送信される（action に指定された server action が呼ばれる）
+    // サブミット後にページ遷移が発生すると、このコンポーネントのアンマウントにより loading はリセットされる
+  }
 
   return (
     <Card className="w-full max-w-md p-6">
@@ -23,7 +31,7 @@ export default function LoginForm() {
         <p className="text-sm text-slate-500">メールアドレスとパスワードでログインします</p>
       </div>
 
-      <form action={actions.login} className="space-y-4">
+      <form action={actions.login} className="space-y-4" onSubmit={onSubmit}>
         <div>
           <Label htmlFor="email">Eメール</Label>
           <Input
@@ -51,8 +59,8 @@ export default function LoginForm() {
         </div>
 
         <div className="mt-2">
-          <Button type="submit" className="w-full" disabled={isPending} aria-busy={isPending}>
-            {isPending ? (
+          <Button type="submit" className="w-full" disabled={loading} aria-busy={loading}>
+            {loading ? (
               // ログイン処理中は共通スピナーと文言を表示
               <>
                 <Spinner className="text-white" size={16} />
