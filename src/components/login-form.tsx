@@ -2,12 +2,13 @@
 
 import { useState } from 'react'
 
+import * as actions from '@/app/login/actions'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
-// ログインフォーム（見た目のみ）
+// ログインフォーム（サーバーアクションに接続）
 export default function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -20,17 +21,12 @@ export default function LoginForm() {
         <p className="text-sm text-slate-500">メールアドレスとパスワードでログインします</p>
       </div>
 
-      <form
-        // 見た目のみのため submit ハンドラはデフォルト動作を prevent する
-        onSubmit={(e) => {
-          e.preventDefault()
-        }}
-        className="space-y-4"
-      >
+      <form action={actions.login} className="space-y-4">
         <div>
           <Label htmlFor="email">Eメール</Label>
           <Input
             id="email"
+            name="email"
             type="email"
             placeholder="you@example.com"
             value={email}
@@ -43,6 +39,7 @@ export default function LoginForm() {
           <Label htmlFor="password">パスワード</Label>
           <Input
             id="password"
+            name="password"
             type="password"
             placeholder="********"
             value={password}
