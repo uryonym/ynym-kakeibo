@@ -1,10 +1,12 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 // スマホ下部に固定するタブバーの見た目だけの実装
 export default function BottomTabs() {
   const [active, setActive] = useState('home')
+  const router = useRouter()
 
   const tabs = [
     { key: 'home', label: 'ホーム', icon: HomeIcon },
@@ -22,7 +24,17 @@ export default function BottomTabs() {
           return (
             <button
               key={t.key}
-              onClick={() => setActive(t.key)}
+              onClick={() => {
+                // 設定タブが押されたら `/settings` に遷移する
+                if (t.key === 'settings') {
+                  setActive(t.key)
+                  router.push('/settings')
+                  return
+                }
+
+                // 他タブは状態のみ更新（将来的にルーティング追加可）
+                setActive(t.key)
+              }}
               className="flex w-full flex-col items-center gap-1 px-2 py-1 text-xs text-slate-600"
             >
               <Icon className={`h-6 w-6 ${isActive ? 'text-sky-600' : 'text-slate-400'}`} />
