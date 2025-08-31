@@ -1,5 +1,7 @@
 // このファイルはアプリのトップページ（サーバーコンポーネント）です。
 // サーバー側でカテゴリと当月の取引を取得し、クライアントコンポーネントへ渡します。
+import { redirect } from 'next/navigation'
+
 import { TransactionDrawer } from '@/components/transaction-drawer'
 import TransactionsList from '@/components/transactions-list'
 import { Card } from '@/components/ui/card'
@@ -21,6 +23,15 @@ const formatYen = (n: number) =>
 
 export default async function Home() {
   const supabase = await createClient()
+  // サーバー側で現在のユーザーを取得し、未ログインであればログインフォームを表示する
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    // 未ログインなら /login ページへリダイレクト
+    redirect('/login')
+  }
   const { data: categories } = await supabase.from('categories').select()
   const categoriesCount = categories?.length ?? 0
   // Supabase から当月の取引を取得する（サーバーサイドで実行）
