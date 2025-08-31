@@ -20,7 +20,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <main className="mx-auto max-w-xl px-4 pt-20 pb-8">
+      <main className="mx-auto max-w-xl px-4 pt-4 pb-8">
         <Card className="p-4">
           <h2 className="text-lg font-semibold">アカウント情報</h2>
           <div className="mt-4 text-sm text-slate-700">

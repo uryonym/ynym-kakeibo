@@ -69,15 +69,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* header */}
-      <div className="fixed inset-x-0 top-0 z-10 border-b bg-white/80 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-xl items-center justify-between px-4 py-3">
-          <h1 className="text-lg font-semibold">ynym-kakeibo</h1>
-          <div className="text-sm text-slate-600">8月</div>
-        </div>
-      </div>
-
-      <main className="mx-auto max-w-xl px-4 pt-20 pb-8">
+      <main className="mx-auto max-w-xl px-4 pt-4 pb-8">
         {/* summary card */}
         <Card className="mb-4 p-4">
           <div className="flex items-center justify-between">
