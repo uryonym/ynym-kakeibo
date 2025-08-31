@@ -32,8 +32,12 @@ export default async function Home() {
     // 未ログインなら /login ページへリダイレクト
     redirect('/login')
   }
-  const { data: categories } = await supabase.from('categories').select()
+  const { data: categories } = await supabase
+    .from('categories')
+    .select('id, name')
+    .order('seq', { ascending: true })
   const categoriesCount = categories?.length ?? 0
+  // サーバーで取得した categories をそのままクライアントへ渡す
   // Supabase から当月の取引を取得する（サーバーサイドで実行）
   const now = new Date()
   const year = now.getFullYear()
@@ -53,8 +57,7 @@ export default async function Home() {
     id: t.id,
     date: t.date,
     title: t.title,
-    category:
-      categories?.find((c: Tables<'categories'>) => c.id === t.category_id)?.name ?? '未分類',
+    category: categories?.find((c) => c.id === t.category_id)?.name ?? '未分類',
     amount: t.amount,
     type: t.type,
   }))
@@ -87,11 +90,11 @@ export default async function Home() {
 
         {/* quick actions */}
         <div className="mb-4 flex gap-2">
-          <TransactionDrawer variant="income" />
-          <TransactionDrawer variant="expense" />
+          <TransactionDrawer variant="income" categories={categories ?? []} />
+          <TransactionDrawer variant="expense" categories={categories ?? []} />
         </div>
 
-        <TransactionsList transactions={transactions} />
+        <TransactionsList transactions={transactions} categories={categories ?? []} />
 
         {/* footer space for mobile */}
         <div className="h-24" />

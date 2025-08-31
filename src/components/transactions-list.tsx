@@ -27,7 +27,13 @@ type Tx = {
 const formatYen = (n: number) =>
   n.toLocaleString('ja-JP', { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 })
 
-export function TransactionsList({ transactions }: { transactions: Tx[] }) {
+export function TransactionsList({
+  transactions,
+  categories,
+}: {
+  transactions: Tx[]
+  categories: Array<{ id: string; name: string }>
+}) {
   const [editing, setEditing] = useState<Tx | null>(null)
 
   return (
@@ -78,6 +84,7 @@ export function TransactionsList({ transactions }: { transactions: Tx[] }) {
             category: editing.category,
             amount: editing.amount,
           }}
+          categories={categories}
           open
           onOpenChange={(v) => {
             if (!v) setEditing(null)

@@ -27,10 +27,12 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
-import { createClient } from '@/utils/supabase/client'
+// ...既存の他インポートのみ
 
 type Props = {
   variant: 'income' | 'expense'
+  // サーバーから渡されたカテゴリ一覧（必ず渡す）
+  categories: Array<{ id: string; name: string }>
   // initialValues が与えられた場合は編集用の初期値としてフォームに流し込みます
   initialValues?: Partial<FormValues> & { id?: string }
   open?: boolean
@@ -53,6 +55,7 @@ export function TransactionDrawer({
   open: openProp,
   onOpenChange,
   hideTrigger,
+  categories,
 }: Props) {
   const isIncome = variant === 'income'
   const [openState, setOpenState] = useState(false)
@@ -91,41 +94,9 @@ export function TransactionDrawer({
 
   const [isSaving, setIsSaving] = useState(false)
 
-  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([])
-  const [loadingCategories, setLoadingCategories] = useState(false)
-
-  useEffect(() => {
-    let mounted = true
-    async function load() {
-      setLoadingCategories(true)
-      try {
-        const supabase = createClient()
-        const { data, error } = await supabase
-          .from('categories')
-          .select('id, name')
-          .order('seq', { ascending: true })
-
-        if (error) {
-          console.error('Failed to load categories', error)
-          return
-        }
-
-        if (mounted && data) {
-          setCategories(data as Array<{ id: string; name: string }>)
-        }
-      } catch (err) {
-        console.error(err)
-      } finally {
-        if (mounted) setLoadingCategories(false)
-      }
-    }
-
-    load()
-
-    return () => {
-      mounted = false
-    }
-  }, [])
+  // サーバーから渡されるカテゴリを直接使用する（クライアントでの再取得は行わない）
+  const categoriesState = categories
+  const loadingCategories = false
 
   async function onSubmit(values: FormValues) {
     setIsSaving(true)
@@ -252,7 +223,7 @@ export function TransactionDrawer({
                           {...form.register('category')}
                         >
                           <option value="">未選択</option>
-                          {categories.map((c) => (
+                          {categoriesState.map((c) => (
                             <option key={c.id} value={c.name}>
                               {c.name}
                             </option>
