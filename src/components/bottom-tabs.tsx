@@ -25,6 +25,13 @@ export default function BottomTabs() {
             <button
               key={t.key}
               onClick={() => {
+                // ホームはルート（収支一覧）へ遷移
+                if (t.key === 'home') {
+                  setActive(t.key)
+                  router.push('/')
+                  return
+                }
+
                 // 設定タブが押されたら `/settings` に遷移する
                 if (t.key === 'settings') {
                   setActive(t.key)
