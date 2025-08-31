@@ -1,17 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 
 import * as actions from '@/app/login/actions'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Spinner } from '@/components/ui/spinner'
 
 // ログインフォーム（サーバーアクションに接続）
 export default function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [isPending] = useTransition()
 
   return (
     <Card className="w-full max-w-md p-6">
@@ -49,8 +51,16 @@ export default function LoginForm() {
         </div>
 
         <div className="mt-2">
-          <Button type="submit" className="w-full">
-            ログイン
+          <Button type="submit" className="w-full" disabled={isPending} aria-busy={isPending}>
+            {isPending ? (
+              // ログイン処理中は共通スピナーと文言を表示
+              <>
+                <Spinner className="text-white" size={16} />
+                ログイン中…
+              </>
+            ) : (
+              'ログイン'
+            )}
           </Button>
         </div>
 
