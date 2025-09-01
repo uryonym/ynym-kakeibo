@@ -14,10 +14,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { formatYen } from '@/utils/format'
 import type { UiTransaction, Category } from '@/utils/types'
-
-const formatYen = (n: number) =>
-  n.toLocaleString('ja-JP', { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 })
 
 export function TransactionsList({
   transactions,

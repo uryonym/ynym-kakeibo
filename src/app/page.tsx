@@ -7,12 +7,9 @@ import { TransactionDrawer } from '@/components/transaction-drawer'
 import TransactionsList from '@/components/transactions-list'
 import { Card } from '@/components/ui/card'
 import { formatYMDSlash } from '@/utils/date'
+import { formatYen } from '@/utils/format'
 import { createClient } from '@/utils/supabase/server'
 import type { DbTransaction, UiTransaction } from '@/utils/types'
-
-// 通貨表示を日本円表記に整形する小さなヘルパー
-const formatYen = (n: number) =>
-  n.toLocaleString('ja-JP', { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 })
 
 export default async function Home({
   searchParams,
