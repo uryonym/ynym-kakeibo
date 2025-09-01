@@ -9,9 +9,27 @@ export async function POST(req: Request) {
   try {
     const body = await req.json()
     const { date, title, category, amount, type } = body
-
-    if (!date || !title || !amount || !type) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    // 基本的な入力検証を行う
+    if (!date || typeof date !== 'string' || Number.isNaN(Date.parse(date))) {
+      return NextResponse.json({ error: 'Invalid or missing date' }, { status: 400 })
+    }
+    if (!title || typeof title !== 'string' || title.trim() === '') {
+      return NextResponse.json({ error: 'Invalid or missing title' }, { status: 400 })
+    }
+    // amount は 0 を許容するため、単純な falsy チェックは避ける
+    if (amount === undefined || amount === null || Number.isNaN(Number(amount))) {
+      return NextResponse.json({ error: 'Invalid or missing amount' }, { status: 400 })
+    }
+    const numAmount = Number(amount)
+    if (!Number.isFinite(numAmount)) {
+      return NextResponse.json({ error: 'Amount must be a finite number' }, { status: 400 })
+    }
+    // type は許容される値のみを受け入れる
+    if (typeof type !== 'string' || (type !== 'income' && type !== 'expense')) {
+      return NextResponse.json(
+        { error: "Invalid or missing type (allowed: 'income'|'expense')" },
+        { status: 400 },
+      )
     }
 
     const supabase = await createClient()
@@ -36,12 +54,14 @@ export async function POST(req: Request) {
       }
     }
 
+    const typedType = type as 'income' | 'expense'
+
     const insertObj = {
       date,
       title,
-      amount: Number(amount),
+      amount: numAmount,
       category_id: categoryId,
-      type,
+      type: typedType,
     }
 
     const { data, error } = await supabase
@@ -93,11 +113,38 @@ export async function PATCH(req: Request) {
     }
 
     const updateObj: Record<string, unknown> = {}
-    if (date !== undefined) updateObj.date = date
-    if (title !== undefined) updateObj.title = title
-    if (amount !== undefined) updateObj.amount = Number(amount)
+    if (date !== undefined) {
+      if (typeof date !== 'string' || Number.isNaN(Date.parse(date))) {
+        return NextResponse.json({ error: 'Invalid date' }, { status: 400 })
+      }
+      updateObj.date = date
+    }
+    if (title !== undefined) {
+      if (typeof title !== 'string' || title.trim() === '') {
+        return NextResponse.json({ error: 'Invalid title' }, { status: 400 })
+      }
+      updateObj.title = title
+    }
+    if (amount !== undefined) {
+      if (amount === null || Number.isNaN(Number(amount))) {
+        return NextResponse.json({ error: 'Invalid amount' }, { status: 400 })
+      }
+      const n = Number(amount)
+      if (!Number.isFinite(n)) {
+        return NextResponse.json({ error: 'Amount must be a finite number' }, { status: 400 })
+      }
+      updateObj.amount = n
+    }
     if (category !== undefined) updateObj.category_id = categoryId
-    if (type !== undefined) updateObj.type = type
+    if (type !== undefined) {
+      if (typeof type !== 'string' || (type !== 'income' && type !== 'expense')) {
+        return NextResponse.json(
+          { error: "Invalid type (allowed: 'income'|'expense')" },
+          { status: 400 },
+        )
+      }
+      updateObj.type = type as 'income' | 'expense'
+    }
 
     const { data, error } = await supabase
       .from('transactions')
