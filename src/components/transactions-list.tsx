@@ -14,15 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-
-type Tx = {
-  id: string
-  date: string
-  title: string
-  category: string
-  amount: number
-  type: 'income' | 'expense'
-}
+import type { UiTransaction, Category } from '@/utils/types'
 
 const formatYen = (n: number) =>
   n.toLocaleString('ja-JP', { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 })
@@ -31,10 +23,10 @@ export function TransactionsList({
   transactions,
   categories,
 }: {
-  transactions: Tx[]
-  categories: Array<{ id: string; name: string }>
+  transactions: UiTransaction[]
+  categories: Category[]
 }) {
-  const [editing, setEditing] = useState<Tx | null>(null)
+  const [editing, setEditing] = useState<UiTransaction | null>(null)
 
   return (
     <>

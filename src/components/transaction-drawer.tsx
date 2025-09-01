@@ -28,11 +28,12 @@ import {
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 // ...既存の他インポートのみ
+import type { Category } from '@/utils/types'
 
 type Props = {
   variant: 'income' | 'expense'
   // サーバーから渡されたカテゴリ一覧（必ず渡す）
-  categories: Array<{ id: string; name: string }>
+  categories: Category[]
   // initialValues が与えられた場合は編集用の初期値としてフォームに流し込みます
   initialValues?: Partial<FormValues> & { id?: string }
   open?: boolean

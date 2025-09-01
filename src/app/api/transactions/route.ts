@@ -2,8 +2,8 @@
 // POST: 新規作成、PATCH: 指定 id の取引を更新
 import { NextResponse } from 'next/server'
 
-import { Tables } from '@/utils/supabase/database.types'
 import { createClient } from '@/utils/supabase/server'
+import type { DbCategory } from '@/utils/types'
 
 export async function POST(req: Request) {
   try {
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
         .limit(1)
         .maybeSingle()
       if (existing) {
-        const e = existing as Tables<'categories'>
+        const e = existing as DbCategory
         categoryId = e.id
       } else {
         const newId = crypto.randomUUID()
@@ -83,7 +83,7 @@ export async function PATCH(req: Request) {
         .limit(1)
         .maybeSingle()
       if (existing) {
-        const e = existing as Tables<'categories'>
+        const e = existing as DbCategory
         categoryId = e.id
       } else {
         const newId = crypto.randomUUID()

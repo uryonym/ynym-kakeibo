@@ -7,17 +7,8 @@ import { TransactionDrawer } from '@/components/transaction-drawer'
 import TransactionsList from '@/components/transactions-list'
 import { Card } from '@/components/ui/card'
 import { formatYMDSlash } from '@/utils/date'
-import { Tables } from '@/utils/supabase/database.types'
 import { createClient } from '@/utils/supabase/server'
-
-type Tx = {
-  id: string
-  date: string
-  title: string
-  category: string
-  amount: number
-  type: 'income' | 'expense'
-}
+import type { DbTransaction, UiTransaction } from '@/utils/types'
 
 // 通貨表示を日本円表記に整形する小さなヘルパー
 const formatYen = (n: number) =>
@@ -81,7 +72,7 @@ export default async function Home({
     .lt('date', endOfPeriodExclusive)
     .order('date', { ascending: true })
 
-  const transactions: Tx[] = (transactionsData ?? []).map((t: Tables<'transactions'>) => ({
+  const transactions: UiTransaction[] = (transactionsData ?? []).map((t: DbTransaction) => ({
     id: t.id,
     date: t.date,
     title: t.title,
