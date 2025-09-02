@@ -39,7 +39,21 @@ export default function BottomTabs() {
                   return
                 }
 
-                // 他タブは状態のみ更新（将来的にルーティング追加可）
+                // 取引一覧へ
+                if (t.key === 'transactions') {
+                  setActive(t.key)
+                  router.push('/transactions')
+                  return
+                }
+
+                // カテゴリ画面へ
+                if (t.key === 'categories') {
+                  setActive(t.key)
+                  router.push('/categories')
+                  return
+                }
+
+                // 他タブは状態のみ更新
                 setActive(t.key)
               }}
               className="flex w-full flex-col items-center gap-1 px-2 py-1 text-xs text-slate-600"
