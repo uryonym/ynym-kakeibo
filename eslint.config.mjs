@@ -38,11 +38,7 @@ const eslintConfig = [
           alphabetize: { order: 'asc', caseInsensitive: true },
           'newlines-between': 'always', // import groups 1行空ける
           pathGroups: [
-            {
-              pattern: 'src/components/**',
-              group: 'internal',
-              position: 'before',
-            },
+            { pattern: 'src/components/**', group: 'internal', position: 'before' },
             { pattern: 'src/lib/**', group: 'internal', position: 'before' },
           ],
         },
