@@ -30,7 +30,6 @@ export default async function Home({
     .from('categories')
     .select('id, name')
     .order('seq', { ascending: true })
-  const categoriesCount = categories?.length ?? 0
   // サーバーで取得した categories をそのままクライアントへ渡す
   // Supabase から当月の取引を取得する（サーバーサイドで実行）
   // 表示する年月を searchParams から取得。形式は YYYY-MM
@@ -108,7 +107,6 @@ export default async function Home({
             <div className="text-right">
               <p className="text-sm text-green-600">収入 {formatYen(incomeTotal)}</p>
               <p className="text-sm text-rose-600">支出 {formatYen(expenseTotal)}</p>
-              <p className="mt-2 text-xs text-slate-500">カテゴリ数: {categoriesCount}</p>
             </div>
           </div>
         </Card>
