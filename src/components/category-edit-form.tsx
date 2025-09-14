@@ -2,29 +2,45 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { useForm } from 'react-hook-form'
 
 import Spinner from './spinner'
 import { Button } from './ui/button'
+import { Form, FormControl, FormField, FormItem, FormLabel } from './ui/form'
+import { Input } from './ui/input'
 
-export default function CategoryEditForm({ id, initialName }: { id: string; initialName: string }) {
-  const [name, setName] = useState(initialName)
-  const [saving, setSaving] = useState(false)
-  const [deleting, setDeleting] = useState(false)
+type CategoryEditFormProps = {
+  id: string
+  initialName: string
+}
+
+type CategoryFormValues = {
+  id: string
+  name: string
+}
+
+export default function CategoryEditForm({ id, initialName }: CategoryEditFormProps) {
   const router = useRouter()
 
-  async function onSave(e?: React.FormEvent) {
-    e?.preventDefault()
-    if (!name.trim()) return
-    setSaving(true)
+  const form = useForm<CategoryFormValues>({
+    defaultValues: { id, name: initialName },
+  })
+
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [deleting, setDeleting] = useState<boolean>(false)
+
+  const onSubmit = async (data: CategoryFormValues) => {
+    setIsLoading(true)
+    console.log(data)
     try {
       await fetch('/api/categories', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, name }),
+        body: JSON.stringify(data),
       })
       router.push('/categories')
     } finally {
-      setSaving(false)
+      setIsLoading(false)
     }
   }
 
@@ -44,46 +60,54 @@ export default function CategoryEditForm({ id, initialName }: { id: string; init
   }
 
   return (
-    <form onSubmit={onSave} className="flex flex-col gap-2">
-      <input
-        name="name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        className="rounded border px-3 py-2"
-      />
-      <div className="flex gap-2">
-        <Button
-          type="submit"
-          variant="default"
-          className="flex items-center bg-slate-800 text-white hover:bg-slate-900"
-          disabled={saving}
-        >
-          {saving ? (
-            <>
-              <Spinner size={16} />
-              <span>保存中...</span>
-            </>
-          ) : (
-            '保存'
+    <Form {...form}>
+      <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>カテゴリ名</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+            </FormItem>
           )}
-        </Button>
-        <Button
-          type="button"
-          variant="destructive"
-          className="flex items-center"
-          onClick={onDelete}
-          disabled={deleting}
-        >
-          {deleting ? (
-            <>
-              <Spinner size={16} />
-              <span>削除中...</span>
-            </>
-          ) : (
-            '削除'
-          )}
-        </Button>
-      </div>
-    </form>
+        />
+        <div className="flex justify-between">
+          <Button
+            type="submit"
+            variant="default"
+            className="flex items-center bg-slate-800 text-white hover:bg-slate-900"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Spinner size={16} />
+                <span>保存中...</span>
+              </>
+            ) : (
+              '保存'
+            )}
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            className="flex items-center"
+            onClick={onDelete}
+            disabled={deleting}
+          >
+            {deleting ? (
+              <>
+                <Spinner size={16} />
+                <span>削除中...</span>
+              </>
+            ) : (
+              '削除'
+            )}
+          </Button>
+        </div>
+      </form>
+    </Form>
   )
 }
