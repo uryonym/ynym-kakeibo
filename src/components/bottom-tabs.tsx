@@ -10,7 +10,6 @@ export default function BottomTabs() {
 
   const tabs = [
     { key: 'home', label: 'ホーム', icon: HomeIcon },
-    { key: 'transactions', label: '明細', icon: ListIcon },
     { key: 'categories', label: 'カテゴリ', icon: TagIcon },
     { key: 'settings', label: '設定', icon: GearIcon },
   ]
@@ -32,24 +31,17 @@ export default function BottomTabs() {
                   return
                 }
 
-                // 設定タブが押されたら `/settings` に遷移する
-                if (t.key === 'settings') {
-                  setActive(t.key)
-                  router.push('/settings')
-                  return
-                }
-
-                // 取引一覧へ
-                if (t.key === 'transactions') {
-                  setActive(t.key)
-                  router.push('/transactions')
-                  return
-                }
-
                 // カテゴリ画面へ
                 if (t.key === 'categories') {
                   setActive(t.key)
                   router.push('/categories')
+                  return
+                }
+
+                // 設定タブが押されたら `/settings` に遷移する
+                if (t.key === 'settings') {
+                  setActive(t.key)
+                  router.push('/settings')
                   return
                 }
 
@@ -81,24 +73,6 @@ function HomeIcon({ className }: { className?: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M3 10.5L12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10.5z"
-      />
-    </svg>
-  )
-}
-
-function ListIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.5}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"
       />
     </svg>
   )
