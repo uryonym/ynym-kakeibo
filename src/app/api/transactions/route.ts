@@ -1,6 +1,5 @@
 // 取引の作成・更新用 API エンドポイント
 // POST: 新規作成、PATCH: 指定 id の取引を更新
-import { NextResponse } from 'next/server'
 
 // export async function POST(req: Request) {
 //   try {
