@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 
 import BottomTabs from '@/components/bottom-tabs'
 import './globals.css'
-import { createClient } from '@/utils/supabase/server'
 
 export const metadata: Metadata = {
   title: 'ynym-kakeibo',
@@ -13,11 +12,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
   return (
     <html lang="ja">
       {/* コンテンツに下部余白をつけ、ボトムタブが被らないようにする */}
@@ -33,7 +27,7 @@ export default async function RootLayout({
 
         {/* コンテンツに下部余白をつけ、ボトムタブが被らないようにする。ヘッダー分の余白も確保 */}
         <div className="min-h-screen pt-14 pb-24">{children}</div>
-        {user ? <BottomTabs /> : null}
+        <BottomTabs />
       </body>
     </html>
   )

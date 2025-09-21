@@ -1,35 +1,31 @@
 // このファイルはアプリのトップページ（サーバーコンポーネント）です。
 // サーバー側でカテゴリと当月の取引を取得し、クライアントコンポーネントへ渡します。
-import { redirect } from 'next/navigation'
-
 import MonthSelector from '@/components/month-selector'
 import { TransactionDrawer } from '@/components/transaction-drawer'
 import TransactionsList from '@/components/transactions-list'
 import { Card } from '@/components/ui/card'
 import { formatYMDSlash } from '@/utils/date'
 import { formatYen } from '@/utils/format'
-import { createClient } from '@/utils/supabase/server'
-import type { DbTransaction, UiTransaction } from '@/utils/types'
+import type { Category, Transaction } from '@/utils/types'
 
 export default async function Home({
   searchParams,
 }: {
   searchParams?: { [key: string]: string | string[] | undefined }
 }) {
-  const supabase = await createClient()
-  // サーバー側で現在のユーザーを取得し、未ログインであればログインフォームを表示する
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    // 未ログインなら /login ページへリダイレクト
-    redirect('/login')
-  }
-  const { data: categories } = await supabase
-    .from('categories')
-    .select('id, name')
-    .order('seq', { ascending: true })
+  // サンプルのカテゴリデータを定義
+  const categories: Category[] = [
+    {
+      id: 'd5b1d1fc-dd07-4b35-9fc4-027c324268ed',
+      name: 'test1',
+      seq: 1,
+    },
+    {
+      id: '3d5d9cc2-59e4-4a2f-a540-e73bca52fa6b',
+      name: 'test2',
+      seq: 2,
+    },
+  ]
   // サーバーで取得した categories をそのままクライアントへ渡す
   // Supabase から当月の取引を取得する（サーバーサイドで実行）
   // 表示する年月を searchParams から取得。形式は YYYY-MM
@@ -61,21 +57,59 @@ export default async function Home({
   const endOfPeriodNext = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate() + 1)
   const endOfPeriodExclusive = `${endOfPeriodNext.getFullYear()}-${String(endOfPeriodNext.getMonth() + 1).padStart(2, '0')}-${String(endOfPeriodNext.getDate()).padStart(2, '0')}`
 
-  const { data: transactionsData } = await supabase
-    .from('transactions')
-    .select('*')
-    .gte('date', startOfPeriod)
-    .lt('date', endOfPeriodExclusive)
-    .order('date', { ascending: true })
+  // サンプルのトランザクションデータを定義
+  const transactions: Transaction[] = [
+    {
+      id: '1',
+      date: '2025-08-26',
+      title: 'ランチ',
+      category_id: '1',
+      amount: 1200,
+      type: 'expense',
+    },
+    {
+      id: '2',
+      date: '2025-08-27',
+      title: '電車代',
+      category_id: '2',
+      amount: 300,
+      type: 'expense',
+    },
+    {
+      id: '3',
+      date: '2025-09-01',
+      title: '給料',
+      category_id: '0',
+      amount: 300000,
+      type: 'income',
+    },
+    { id: '4', date: '2025-09-05', title: '映画', category_id: '4', amount: 1500, type: 'expense' },
+    {
+      id: '5',
+      date: '2025-09-10',
+      title: '電気代',
+      category_id: '3',
+      amount: 6000,
+      type: 'expense',
+    },
+    {
+      id: '6',
+      date: '2025-09-15',
+      title: 'ディナー',
+      category_id: '1',
+      amount: 4500,
+      type: 'expense',
+    },
+  ]
 
-  const transactions: UiTransaction[] = (transactionsData ?? []).map((t: DbTransaction) => ({
-    id: t.id,
-    date: t.date,
-    title: t.title,
-    category: categories?.find((c) => c.id === t.category_id)?.name ?? '未分類',
-    amount: t.amount,
-    type: t.type,
-  }))
+  // const transactions: UiTransaction[] = (transactionsData ?? []).map((t: DbTransaction) => ({
+  //   id: t.id,
+  //   date: t.date,
+  //   title: t.title,
+  //   category: categories?.find((c) => c.id === t.category_id)?.name ?? '未分類',
+  //   amount: t.amount,
+  //   type: t.type,
+  // }))
 
   const incomeTotal = transactions
     .filter((t) => t.type === 'income')

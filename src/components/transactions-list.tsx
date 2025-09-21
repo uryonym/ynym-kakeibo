@@ -15,16 +15,16 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { formatYen } from '@/utils/format'
-import type { UiTransaction, Category } from '@/utils/types'
+import type { Transaction, Category } from '@/utils/types'
 
 export function TransactionsList({
   transactions,
   categories,
 }: {
-  transactions: UiTransaction[]
+  transactions: Transaction[]
   categories: Category[]
 }) {
-  const [editing, setEditing] = useState<UiTransaction | null>(null)
+  const [editing, setEditing] = useState<Transaction | null>(null)
 
   return (
     <>
@@ -49,7 +49,7 @@ export function TransactionsList({
                   </TableCell>
                   <TableCell>
                     <div className="text-sm font-medium">{t.title}</div>
-                    <div className="text-xs text-slate-500">{t.category}</div>
+                    <div className="text-xs text-slate-500">{t.category_id}</div>
                   </TableCell>
                   <TableCell
                     className={`text-right text-sm ${t.type === 'income' ? 'text-green-600' : 'text-rose-600'}`}
@@ -71,7 +71,7 @@ export function TransactionsList({
             id: editing.id,
             date: editing.date,
             title: editing.title,
-            category: editing.category,
+            category: editing.category_id,
             amount: editing.amount,
           }}
           categories={categories}
