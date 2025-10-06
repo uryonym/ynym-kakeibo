@@ -23,6 +23,20 @@
 - ❌ Avoid HOW to implement here (keep tech details minimal; implementation will follow in plan).
 - When a detail is omitted by the user, mark with [NEEDS CLARIFICATION].
 
+## Clarifications
+
+### Session 2025-10-05
+
+- Q: データの永続化・同期方式としてどれを採用しますか？ → A: A (サーバサイド永続化: PostgreSQL に保存。オフライン非対応)
+- Q: 通貨サポートはどれを採用しますか？ → A: 単一通貨(JPY)、小数点は 0 桁
+- Q: カテゴリ削除時の過去取引の扱いはどれを採用しますか？ → B (カテゴリ削除を禁止: 取引が紐づく場合は削除不可)
+
+### Session 2025-10-07
+
+- Q: ID / 一意性ルールはどうしますか？ → A: 全エンティティに UUID を採用
+- Q: 月の境界とタイムゾーンはどう扱いますか？ → A: ユーザーのローカル日付を前提（例: Asia/Tokyo）
+- Q: 削除/編集の履歴はどうしますか？ → A: ソフトデリート + 監査ログを採用（推奨）
+
 ---
 
 ## User Scenarios & Testing _(mandatory)_
@@ -37,7 +51,7 @@
 2. **Given** ある月（例: 2025-09）が表示されている、 **When** 月切替で 2025-08 を選択する、 **Then** 2025-08 の取引とその合計・差額が表示される。
 3. **Given** カテゴリ管理画面、 **When** 新しいカテゴリ「交際費」を追加する、 **Then** トランザクション作成時に「交際費」が選択可能になる。
 4. **Given** 既存の取引、 **When** 取引を編集してカテゴリや金額を変更する、 **Then** 変更内容が保存され、該当月の合計/差額が再計算される。
-5. **Given** ログイン不要で匿名利用、 **When** ユーザーが別の端末/ブラウザでアクセスする、 **Then** [NEEDS CLARIFICATION: データの同期・永続化方式（サーバ保存 / ローカルのみ / 局所キャッシュ + サーバ同期）を決定する必要がある]
+5. **Given** ログイン不要で匿名利用、 **When** ユーザーが別の端末/ブラウザでアクセスする、 **Then** データはサーバサイド（PostgreSQL）に永続化され、別端末から同一のデータを参照できる（オフライン同期は本フェーズでサポートしない）。
 
 ### Edge Cases
 
@@ -59,13 +73,13 @@
 - **FR-003**: 月切替と集計表示
   - UI はユーザーが任意の月へ切り替え可能とし、表示は total_income、total_expense、balance を含むこと。
 - **FR-004**: カテゴリ管理
-  - システムはカテゴリの追加・編集・削除をサポートする。カテゴリは name（必須）を持つ。
+  - システムはカテゴリの追加および編集をサポートする。カテゴリの削除は、当該カテゴリに紐づくトランザクションが存在する場合は禁止する（先に該当トランザクションのカテゴリを再割当するか削除する必要がある）。カテゴリは name（必須）を持つ。
 - **FR-005**: 認証不要
   - 本機能はログインを要求しない（ANONYMOUS MODE）。ただしデータ永続化/共有方法は別途決定する（FR-006）。
 - **FR-006**: データ永続化方式
-  - デフォルト想定はサーバサイド永続化（バックエンド DB）。オフライン対応やローカルオンリーの場合は [NEEDS CLARIFICATION]。
+  - データはサーバサイド永続化（PostgreSQL）を採用する。本フェーズではオフライン入力やクライアントのみの永続化はサポートしない。
 - **FR-007**: 通貨と精度
-  - 金額は小数点 2 桁で扱う。単一通貨前提か多通貨対応かは [NEEDS CLARIFICATION]。
+  - 単一通貨 (JPY) を採用し、金額は円単位で小数点は 0 桁とする（内部表現は integer または decimal(10,0)）。
 - **FR-008**: 即時反映
   - すべての作成・編集・削除は一覧表示と集計に直ちに反映される。
 - **FR-009**: エラーハンドリング
@@ -78,6 +92,11 @@
 - 読み取り性能: 月当たり 1,000 件程度の取引を想定しても UI は 200ms 未満で応答すること（詳細は要合意）。[NEEDS CLARIFICATION]
 - 可用性: 基本的に単一リージョンの SaaS 想定、バックアップ方針は別途定義。
 
+### Audit, Timezone & Data Handling
+
+- Month boundary / Timezone: 月集計はユーザーのローカル日付を基準とする（日本向けデフォルト: Asia/Tokyo）。日付フィルタはローカル日付で行うこと。
+- Audit & Deletion: すべての変更操作（作成・編集・削除）は監査ログに記録する。削除はソフトデリートを採用し、監査ログには少なくとも { action, entity_type, entity_id, previous_value, new_value, timestamp, actor(optional) } を記録すること。
+
 ---
 
 ### Key Entities
@@ -87,11 +106,13 @@
   - id: UUID
   - title: string
   - category_id: UUID
-  - amount: decimal(10,2)
+  - amount: decimal(10,0)
   - type: enum {INCOME, EXPENSE}
   - date: date (ISO 8601)
   - note: text (optional)
   - created_at, updated_at
+  - deleted_at: timestamp (nullable) # ソフトデリート
+  - deleted_by: string (optional)
 
 - **Category**
 
@@ -100,6 +121,7 @@
   - color: string (optional)
   - order_index: integer (optional)
   - created_at, updated_at
+  - deleted_at: timestamp (nullable) # ソフトデリート用（管理上）
 
 - **MonthSummary** (derived)
   - month: YYYY-MM
