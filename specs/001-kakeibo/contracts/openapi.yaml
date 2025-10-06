@@ -1,0 +1,171 @@
+openapi: 3.0.3
+info:
+  title: ynym-kakeibo API
+  version: 1.0.0
+  description: |
+    家計簿機能のAPI仕様。
+    トランザクションおよびカテゴリの作成・更新・参照を行う。
+paths:
+  /transactions:
+    get:
+      summary: 指定月の取引一覧を取得
+      parameters:
+        - in: query
+          name: month
+          description: 取得対象の年月（形式: YYYY-MM）
+          schema:
+            type: string
+            example: '2025-10'
+      responses:
+        '200':
+          description: 正常終了（取引一覧）
+    post:
+      summary: 取引を作成する
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionCreate'
+      responses:
+        '201':
+          description: 作成されました
+  /transactions/{id}:
+    put:
+      summary: 取引を更新する
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionUpdate'
+      responses:
+        '200':
+          description: 更新されました
+    delete:
+      summary: 取引を削除する（ソフトデリート）
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 削除されました（内容はソフトデリート）
+  /categories:
+    get:
+      summary: カテゴリ一覧を取得
+      responses:
+        '200':
+          description: 正常終了（カテゴリ一覧）
+    post:
+      summary: カテゴリを作成する
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreate'
+      responses:
+        '201':
+          description: 作成されました
+  /categories/{id}:
+    put:
+      summary: カテゴリを更新する
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryUpdate'
+      responses:
+        '200':
+          description: 更新されました
+    delete:
+      summary: カテゴリを削除する（取引が存在する場合は禁止）
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '409':
+          description: 競合 - 取引が存在するためカテゴリを削除できません
+components:
+  schemas:
+    TransactionCreate:
+      type: object
+      required:
+        - title
+        - category_id
+        - amount
+        - type
+        - date
+      properties:
+        title:
+          type: string
+          maxLength: 100
+        category_id:
+          type: string
+          format: uuid
+        amount:
+          type: integer
+          description: 金額（JPY、少数なし）
+        type:
+          type: string
+          enum: [INCOME, EXPENSE]
+        date:
+          type: string
+          format: date
+        note:
+          type: string
+    TransactionUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 100
+        category_id:
+          type: string
+          format: uuid
+        amount:
+          type: integer
+        type:
+          type: string
+          enum: [INCOME, EXPENSE]
+        date:
+          type: string
+          format: date
+        note:
+          type: string
+    CategoryCreate:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 50
+        color:
+          type: string
+    CategoryUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 50
+        color:
+          type: string
