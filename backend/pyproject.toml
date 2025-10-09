@@ -1,7 +1,15 @@
 [project]
-name = "backend"
+name = "ynym-kakeibo-backend"
 version = "0.1.0"
-description = "Add your description here"
+description = "Backend for ynym-kakeibo (FastAPI)"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "fastapi[standard]",
+    "SQLAlchemy>=1.4",
+    "alembic>=1.10",
+    "psycopg[binary]",
+    "pydantic",
+    "pytest>=7.0",
+    "httpx>=0.28.1",
+]
